@@ -1,0 +1,8 @@
+<a class="repo-link" data-repository-link href="{{ config.repo_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ config.repo_name }} on GitHub (opens in a new tab)">
+  <span class="repo-link__icon" aria-hidden="true">{% include ".icons/fontawesome/brands/github.svg" %}</span>
+  <span>{{ config.repo_name }}</span>
+  <span class="repo-stars" data-repo-stars hidden>
+    <span class="repo-stars__icon" aria-hidden="true">{% include ".icons/material/star-outline.svg" %}</span>
+    <span data-repo-star-count></span>
+  </span>
+</a>

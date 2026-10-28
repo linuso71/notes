@@ -1,13 +1,18 @@
 site_name: Linus's Notes
-site_description: Illustrated study notes on agentic AI and LangGraph.
+site_description: A course library of illustrated study notes, examples, and downloads.
 site_url: https://linuso71.github.io/notes/
 repo_url: https://github.com/linuso71/notes
 repo_name: linuso71/notes
 edit_uri: ""
-docs_dir: Agentic AI using LangGraph
+docs_dir: docs
+watch:
+  - courses
 
 theme:
   name: material
+  custom_dir: overrides
+  icon:
+    logo: material/notebook-outline
   palette:
     - scheme: default
       primary: indigo
@@ -15,36 +20,38 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
+      primary: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   features:
-    - navigation.sections
+    - navigation.indexes
     - navigation.footer
     - navigation.top
     - search.suggest
     - search.highlight
     - content.code.copy
 
-nav:
-  - Home: README.md
-  - Agentic AI using LangGraph:
-      - "3. LangChain vs LangGraph": Video_03_LangChain_vs_LangGraph/CampusX_LangChain_vs_LangGraph_Expanded_Notes.md
-      - "4. Core concepts": Video_04_LangGraph_Core_Concepts/CampusX_LangGraph_Core_Concepts_Expanded_Notes.md
-      - "5. Sequential workflows": Video_05_Sequential/Video_05_Sequential.md
-      - "6. Parallel workflows": Video_06_Parallel/Video_06_Parallel.md
-      - "7. Conditional workflows": Video_07_Conditional/Video_07_Conditional.md
-      - "8. Iterative workflows": Video_08_Iterative/Video_08_Iterative.md
+extra:
+  generator: false
+
+extra_css:
+  - stylesheets/courses.css
+
+extra_javascript:
+  - javascripts/youtube-links.js
+  - javascripts/repository.js
 
 plugins:
   - search
 
 hooks:
+  - hooks/courses.py
   - hooks/downloads.py
 
 markdown_extensions:
   - attr_list
+  - md_in_html
   - admonition
   - pymdownx.highlight
   - pymdownx.superfences

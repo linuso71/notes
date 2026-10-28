@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {{ super() }}
+  <aside class="repo-support" aria-label="Support these notes">
+    <span>Found these notes helpful?</span>
+    <a class="repo-support__button" href="{{ config.repo_url }}" target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true">{% include ".icons/material/star-outline.svg" %}</span>
+      Star on GitHub
+    </a>
+  </aside>
+{% endblock %}
