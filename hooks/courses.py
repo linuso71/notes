@@ -69,7 +69,9 @@ def discover_courses(root):
         lessons = []
         for _, formats in sorted(grouped.items(), key=lambda item: natural_key(item[0])):
             main = next(formats[extension] for extension in (".md", ".markdown", ".pdf", ".docx") if extension in formats)
-            lessons.append({"title": note_title(directory / main), "path": main, "formats": formats})
+            markdown = formats.get(".md") or formats.get(".markdown")
+            markdown_bundle = str(Path(markdown).with_suffix("")) + "-markdown.zip" if markdown else None
+            lessons.append({"title": note_title(directory / main), "path": main, "formats": formats, "markdown_bundle": markdown_bundle})
         topics = [re.sub(r"^Video\s+\d+\s*[-—:]\s*", "", lesson["title"]) for lesson in lessons[:3]]
         description = str(metadata.get("description") or " · ".join(topics))
         courses.append({
@@ -108,9 +110,9 @@ def lesson_list(course):
         formats = lesson["formats"]
         pdf = download_link(formats[".pdf"], "PDF") if ".pdf" in formats else "—"
         word = download_link(formats[".docx"], "Word") if ".docx" in formats else "—"
-        markdown = formats.get(".md") or formats.get(".markdown")
-        raw = download_link(f"downloads/{markdown}", "Markdown") if markdown else "—"
-        lines.append(f"| {label} | {pdf} | {word} | {raw} |")
+        markdown_bundle = lesson["markdown_bundle"]
+        markdown = download_link(f"downloads/{markdown_bundle}", "Markdown (ZIP)") if markdown_bundle else "—"
+        lines.append(f"| {label} | {pdf} | {word} | {markdown} |")
     return "\n".join(lines) + "\n\n"
 
 

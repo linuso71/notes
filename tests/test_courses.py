@@ -42,7 +42,7 @@ class CourseDiscoveryTests(unittest.TestCase):
             course = courses.discover_courses(root)[0]
             self.assertEqual([lesson["title"] for lesson in course["lessons"]], ["Earlier lesson", "Later lesson"])
             self.assertEqual(set(course["lessons"][0]["formats"]), {".md", ".pdf", ".docx"})
-            self.assertIn('href="downloads/Lesson_2.md" download', courses.course_overview(course))
+            self.assertIn('href="downloads/Lesson_2-markdown.zip" download', courses.course_overview(course))
 
     def test_new_and_removed_courses_refresh_navigation_on_each_build(self):
         class Config(dict):

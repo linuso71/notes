@@ -45,7 +45,11 @@ Edit notes inside `courses/<course name>/` and keep image links relative to each
 
 `hooks/courses.py` discovers courses, builds navigation and cards, and updates the lesson list in each overview. Existing README content is preserved; course information appears below the automatic lesson list when there is no existing `## Lessons` section. You can place `<!-- course-lessons -->` in a README to choose where its generated list appears.
 
-`hooks/downloads.py` adds lesson download buttons, publishes original Markdown under `courses/<slug>/downloads/`, and creates a ZIP per course at `courses/<slug>/downloads/all-notes.zip`. A combined ZIP is also built at `downloads/all-notes.zip`.
+`hooks/downloads.py` adds lesson download buttons. **Markdown (ZIP)** downloads a folder containing the note and its local images, preserving their relative paths so diagrams work offline after extraction. This works for inline, reference-style, and HTML images. PDF and Word downloads remain individual files.
+
+Published Word files explicitly use white pages and dark default text, independently of the website theme. The same copies are included in course ZIPs. Source DOCX files, illustrations, and other formatting are preserved. A document viewer can still apply its own dark-page display preference.
+
+Lesson ZIPs are built under `courses/<slug>/downloads/`, alongside the raw Markdown copies. A full course ZIP is built at `courses/<slug>/downloads/all-notes.zip`, and a combined ZIP at `downloads/all-notes.zip`.
 
 To offer PDF or Word downloads for a new lesson, place files with the same basename as its Markdown alongside it. These files are supplied by the author; the build does not convert between formats.
 
