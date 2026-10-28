@@ -116,8 +116,6 @@ print(result)  # bmi approximately 26.73; category = 'Overweight'
 | After `calculate_bmi` | inputs preserved; `bmi=26.73` added |
 | After `label_bmi` | earlier keys preserved; `category='Overweight'` added |
 
-![State accumulates partial updates](images/03_state_timeline.png)
-
 **Why partial returns?** If `calculate_bmi` returns `{"bmi": 26.73}`, the runtime merges that into the state. It is not necessary to return `weight_kg` or `height_m` again. This matters especially when you later learn parallel graphs, where two nodes writing the same unprotected key in one step can conflict.
 
 ## 5. Move from pure Python to an LLM node
@@ -142,6 +140,8 @@ You would register `answer_question` exactly as you registered `calculate_bmi`. 
 ## 6. Prompt chaining: outline -> draft -> review
 
 **Prompt chaining** means breaking one complex request into narrower, ordered model tasks. In a blog generator, the writer depends on the planner's outline, and the editor depends on the draft.
+
+![Prompt chain: topic, outline, draft, edit, and final article](images/03_prompt_chain.png)
 
 ```python
 class BlogState(TypedDict):
