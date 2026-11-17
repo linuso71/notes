@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 
+{% block extrahead %}
+  {{ super() }}
+  <script>
+    try {
+      if (localStorage.getItem('notes:sidebar-hidden') === 'true') {
+        document.documentElement.classList.add('sidebar-hidden');
+      }
+    } catch {}
+  </script>
+{% endblock %}
+
+{% block site_nav %}
+  {{ super() }}
+  {% if page and page.url.startswith('courses/') %}
+    <button type="button" class="sidebar-edge-toggle" data-sidebar-toggle aria-controls="notes-sidebar" aria-expanded="true" aria-label="Collapse sidebar" title="Collapse sidebar" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 7-5 5 5 5"/></svg>
+    </button>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   {{ super() }}
   <aside class="repo-support" aria-label="Support these notes">

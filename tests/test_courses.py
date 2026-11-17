@@ -63,6 +63,31 @@ class CourseDiscoveryTests(unittest.TestCase):
             courses.on_pre_build(config)
             self.assertEqual(config["nav"], [{"Home": "index.md"}])
 
+    def test_supplementary_resources_are_published_without_becoming_lessons(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            directory = root / "Example"
+            directory.mkdir()
+            (directory / "README.md").write_text(
+                '---\nresources:\n  - combined.pdf\n  - chapters.md\n---\n'
+                '# Example\n\n[Chapter index](chapters.md)\n'
+            )
+            (directory / "combined.pdf").write_bytes(b"PDF")
+            (directory / "chapters.md").write_text("# Chapter index\n")
+            (directory / "Lesson.md").write_text("# Lesson\n")
+            course = courses.discover_courses(root)[0]
+            self.assertEqual([lesson["path"] for lesson in course["lessons"]], ["Lesson.md"])
+            class Config(dict):
+                site_dir = str(root / "site")
+                use_directory_urls = True
+                plugins = SimpleNamespace(_current_plugin=None)
+            config = Config(extra={"courses": [course]})
+            published = courses.on_files([], config)
+            self.assertEqual({file.src_uri for file in published}, {
+                "courses/example/README.md", "courses/example/Lesson.md",
+                "courses/example/chapters.md", "courses/example/combined.pdf",
+            })
+
     def test_optional_metadata_preserves_course_urls_and_authored_sections(self):
         with TemporaryDirectory() as temp:
             root = Path(temp)

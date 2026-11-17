@@ -1,0 +1,152 @@
+.md-typeset .image-viewer-trigger {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: .25rem;
+  background: transparent;
+  cursor: zoom-in;
+  vertical-align: middle;
+}
+
+.image-viewer-trigger img {
+  display: block;
+}
+
+.image-viewer-trigger:focus-visible {
+  outline: 3px solid var(--md-accent-fg-color, #5944ba);
+  outline-offset: 4px;
+}
+
+html.image-viewer-open {
+  overflow: hidden;
+}
+
+.image-viewer {
+  width: min(96vw, 1440px);
+  height: 92vh;
+  height: 92dvh;
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #475569;
+  border-radius: .65rem;
+  background: #111827;
+  color: #f8fafc;
+  box-shadow: 0 20px 70px #0008;
+}
+
+.image-viewer[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-viewer::backdrop {
+  background: #000c;
+}
+
+.image-viewer__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem;
+  padding: .6rem .8rem;
+  border-bottom: 1px solid #374151;
+}
+
+.image-viewer__toolbar h2 {
+  margin: 0;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.image-viewer__controls {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.image-viewer__controls button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: .4rem .55rem;
+  border: 1px solid #64748b;
+  border-radius: .3rem;
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.image-viewer__controls button:hover {
+  background: #334155;
+}
+
+.image-viewer__controls button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.image-viewer :focus-visible {
+  outline: 2px solid #c4b6ff;
+  outline-offset: 2px;
+}
+
+.image-viewer__controls output {
+  width: 4.5ch;
+  text-align: center;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.image-viewer__viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  cursor: grab;
+}
+
+.image-viewer__viewport--dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.image-viewer__canvas {
+  display: grid;
+  place-items: center;
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.image-viewer__image {
+  display: block;
+  max-width: none;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.image-viewer__caption,
+.image-viewer__help {
+  margin: 0;
+  padding: .4rem .8rem;
+  font-size: .7rem;
+  line-height: 1.5;
+}
+
+.image-viewer__caption {
+  overflow: hidden;
+  border-top: 1px solid #374151;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.image-viewer__help {
+  padding-top: 0;
+  color: #cbd5e1;
+}

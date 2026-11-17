@@ -37,16 +37,21 @@ extra:
 
 extra_css:
   - stylesheets/courses.css
+  - stylesheets/image-viewer.css
+  - stylesheets/reading-view.css
 
 extra_javascript:
   - javascripts/youtube-links.js
   - javascripts/repository.js
+  - javascripts/image-viewer.js
+  - javascripts/reading-view.js
 
 plugins:
   - search
 
 hooks:
   - hooks/courses.py
+  - hooks/images.py
   - hooks/downloads.py
 
 markdown_extensions:

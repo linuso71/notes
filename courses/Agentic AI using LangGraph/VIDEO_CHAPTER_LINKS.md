@@ -1,4 +1,4 @@
-# Chapter links for all five videos
+# Chapter links for videos 11, 13, 16, 17, and 18
 
 
 
@@ -13,7 +13,7 @@ Video selections (from CampusX Agentic AI using LangGraph playlist):
 
 1. Playlist #11: Persistence and Time Travel in LangGraph
    https://www.youtube.com/watch?v=_IPP7_Bi8uA
-   File: 01_Persistence_Time_Travel_CampusX_Notes.docx
+   File: Video_11_Persistence_and_Time_Travel/Video_11_Persistence_and_Time_Travel.docx
      00:00  Introduction  https://www.youtube.com/watch?v=_IPP7_Bi8uA&t=0s
      01:03  What is persistence?  https://www.youtube.com/watch?v=_IPP7_Bi8uA&t=63s
      07:25  What makes persistence special?  https://www.youtube.com/watch?v=_IPP7_Bi8uA&t=445s
@@ -31,7 +31,7 @@ Video selections (from CampusX Agentic AI using LangGraph playlist):
 
 2. Playlist #13: Streaming in LangGraph
    https://www.youtube.com/watch?v=D1PcZaeQ2eg
-   File: 02_Streaming_CampusX_Notes.docx
+   File: Video_13_Streaming_in_LangGraph/Video_13_Streaming_in_LangGraph.docx
      00:00  Introduction  https://www.youtube.com/watch?v=D1PcZaeQ2eg&t=0s
      02:55  Streaming demo  https://www.youtube.com/watch?v=D1PcZaeQ2eg&t=175s
      04:13  What is streaming?  https://www.youtube.com/watch?v=D1PcZaeQ2eg&t=253s
@@ -41,7 +41,7 @@ Video selections (from CampusX Agentic AI using LangGraph playlist):
 
 3. Playlist #16: LangSmith Crash Course: Observability in GenAI
    https://www.youtube.com/watch?v=4FFspU4riHk
-   File: 03_LangSmith_Crash_Course_CampusX_Notes.docx
+   File: Video_16_LangSmith_and_Observability/Video_16_LangSmith_and_Observability.docx
      00:00  Introduction  https://www.youtube.com/watch?v=4FFspU4riHk&t=0s
      01:53  Why LangSmith?  https://www.youtube.com/watch?v=4FFspU4riHk&t=113s
      08:30  Second motivating example  https://www.youtube.com/watch?v=4FFspU4riHk&t=510s
@@ -59,7 +59,7 @@ Video selections (from CampusX Agentic AI using LangGraph playlist):
 
 4. Playlist #17: Observability in LangGraph: LangSmith Integration
    https://www.youtube.com/watch?v=ikzN6byFNWw
-   File: 04_LangGraph_LangSmith_Integration_CampusX_Notes.docx
+   File: Video_17_Observability_in_LangGraph/Video_17_Observability_in_LangGraph.docx
      00:00  Introduction  https://www.youtube.com/watch?v=ikzN6byFNWw&t=0s
      00:10  Recap  https://www.youtube.com/watch?v=ikzN6byFNWw&t=10s
      03:25  Getting an API key  https://www.youtube.com/watch?v=ikzN6byFNWw&t=205s
@@ -67,7 +67,7 @@ Video selections (from CampusX Agentic AI using LangGraph playlist):
 
 5. Playlist #18: Tools in LangGraph: ToolNode and Tool Calling
    https://www.youtube.com/watch?v=_UuUigoM9MA
-   File: 05_Tools_ToolNode_CampusX_Notes.docx
+   File: Video_18_Tools_and_ToolNode/Video_18_Tools_and_ToolNode.docx
      00:00  Introduction and demo  https://www.youtube.com/watch?v=_UuUigoM9MA&t=0s
      05:37  Plan of action  https://www.youtube.com/watch?v=_UuUigoM9MA&t=337s
      06:48  Tools in LangGraph  https://www.youtube.com/watch?v=_UuUigoM9MA&t=408s

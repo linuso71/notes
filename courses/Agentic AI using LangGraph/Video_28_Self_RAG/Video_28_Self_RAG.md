@@ -1,145 +1,228 @@
-# Video 28 — Self-RAG: Reflection and Verification
+# Self-RAG
 
-> **CampusX Agentic AI using LangGraph · Playlist position 28 · Theory-first study notes**  \
-> [Watch the lesson](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28) · [Full playlist](https://www.youtube.com/playlist?list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL)
+**Agentic AI using LangGraph | Video 28 | CampusX**  
+**Lesson:** [Self-RAG Tutorial: How to Make Your AI Fact-Check Itself | Advanced RAG | CampusX](https://www.youtube.com/watch?v=BbO_XaEjzaA)
 
-**Study scope:** Important conceptual material and small teaching examples, not a recreation of the tutorial project. These are original explanatory notes based on the video’s public chapter outline and the linked technical sources—not a transcript.
+> **Core idea:** Self-RAG adds adaptive retrieval and self-reflection so the system can judge whether evidence is needed, whether it is relevant, and whether the generated answer is supported and useful.
 
-![Conceptual flow for Self-RAG: Reflection and Verification](images/workflow.png)
+## 1. Learning goals
 
-## Learning objectives
+Understand adaptive retrieval, relevance grading, grounding checks, answer usefulness, feedback loops, and the original Self-RAG token mechanism.
 
-Explain why Self-RAG adds **retrieval decisions, relevance checks, evidence-grounding checks and usefulness evaluation**, and distinguish the original **research framework** from the more practical **LangGraph reflection workflow** demonstrated in the lesson.
+### Video chapter links
 
-## 1. Three weaknesses of ordinary RAG
+| Time | Chapter |
+| --- | --- |
+| [00:00](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=0s) | Introduction to Advanced RAG Techniques |
+| [01:00](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=60s) | Prerequisites & Disclaimer |
+| [01:48](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=108s) | 3 Major Problems with Traditional RAG |
+| [02:14](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=134s) | Problem 1: Indiscriminate/Unnecessary Retrieval |
+| [05:17](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=317s) | Problem 2: Blind Trust in Documents |
+| [06:55](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=415s) | Problem 3: Lack of Answer Verification |
+| [07:34](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=454s) | What is Self-RAG? (Self-Reflective RAG) |
+| [08:24](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=504s) | The 4 Key Questions Self-RAG Answers |
+| [12:40](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=760s) | Architectural Overview & Logic |
+| [15:05](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=905s) | Step 1: Implementing the Retrieval Decision Node |
+| [35:30](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=2130s) | Step 2: Filtering Relevant Documents |
+| [41:00](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=2460s) | Step 3: Generating Answers from Context |
+| [45:56](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=2756s) | Step 4: Detecting Hallucinations (Support Node) |
+| [53:36](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=3216s) | Step 5: Implementing the Revised Answer Loop |
+| [58:23](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=3503s) | Step 6: Testing Answer Usefulness & Query Rewriting |
+| [01:08:13](https://www.youtube.com/watch?v=BbO_XaEjzaA&t=4093s) | Conclusion & Final Summary |
 
-Standard RAG often retrieves a fixed number of chunks for every question. This produces three common problems:
+**Prerequisites:** Basic Python and the idea of an LLM workflow are helpful. New terms are explained when first used.
 
-1. **Unnecessary retrieval:** “What is 2 + 2?” may not need a vector search at all.
-2. **Blind trust:** the returned chunks may be irrelevant, stale or contradictory.
-3. **Unverified answers:** even with relevant evidence, the generated answer may contain unsupported claims.
+---
 
-A good advanced-RAG design should decide **when retrieval is useful**, **which evidence is relevant**, and **whether the final answer is supported and helpful**.
+## 2. The limits of fixed retrieval
 
-## 2. What does “Self-RAG” mean?
+Traditional RAG usually retrieves passages for every question, even when retrieval is unnecessary. It may then pass low-quality chunks to a language model and accept whatever answer the model produces without checking whether the evidence supports it.
 
-The research paper *Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection* describes training a model to retrieve adaptively and critique its generation using special **reflection tokens**. In LangGraph educational implementations, the same *design goals* are often represented as separate graph nodes: a retrieval router, document relevance grader, answer generator, grounding checker, usefulness checker and conditional retries.
+Three problems follow: **unnecessary retrieval**, **blind trust in retrieved documents**, and **missing answer verification**. A strong RAG system should ask not only “What documents did we find?” but also “Did we need them, are they relevant, and did the answer actually use them correctly?”
 
-**Important distinction:** a LangGraph pipeline using ordinary LLM grader nodes is **Self-RAG-inspired**; it is not automatically the original paper's trained single-model, reflection-token implementation. The CampusX tutorial focuses on the practical workflow architecture.
+<p align="center"><img src="images/02_rag_three_problems.png" alt="Three recurring failures in fixed RAG" width="515"></p>
 
-## 3. Four central decisions
+For example, “What is 2 + 2?” does not need a document search. “What does this company's latest policy say?” likely does. And “Summarize a policy from a retrieved PDF” should be checked against the actual passage rather than answered from general impressions.
 
-| Question | Typical node | Why it matters |
-|---|---|---|
-| Do we need external information? | Retrieval router | Saves needless retrieval cost |
-| Are these retrieved chunks relevant? | Document grader | Stops noise before generation |
-| Is the answer supported by the supplied evidence? | Hallucination / support grader | Checks groundedness |
-| Does the answer actually address the user's question? | Usefulness grader | Checks task completion |
+## 3. The idea behind Self-RAG
 
-**Groundedness is not usefulness.** An answer can be perfectly supported by a document and still fail to answer the question. Conversely, a helpful-sounding answer can be unsupported by evidence.
+**Self-RAG** means *self-reflective retrieval-augmented generation*: the system uses feedback about retrieval and its own answers to improve factual grounding and usefulness. Instead of treating retrieval as a fixed preprocessing step, the system can decide **when to retrieve**, judge the evidence, generate a candidate, and critique that candidate.
 
-## 4. A conceptual Self-RAG-style loop
+<p align="center"><img src="images/01_self_rag.png" alt="Self-RAG adds reflection around retrieval" width="515"></p>
 
-1. Receive a query and determine whether local knowledge is sufficient or retrieval is needed.
-2. If needed, retrieve candidate documents.
-3. Grade and discard clearly irrelevant chunks.
-4. If evidence is missing, rewrite the query and retry retrieval within a budget.
-5. Generate an answer using the relevant context.
-6. Evaluate whether claims are supported by that context.
-7. If unsupported, revise or regenerate; if supported, check whether the answer answers the question.
-8. If useful and grounded, return; otherwise retry a bounded number of times or abstain.
+An intuitive way to remember the pattern is **think → retrieve if needed → answer → check → revise or finish**. The purpose of checking is not to produce longer answers; it is to reduce unsupported claims and make the final answer match the user's actual question.
 
-An agent must set a **maximum retry/search limit**. An unbounded self-reflection loop can run indefinitely, consume tokens and keep producing confident unsupported output.
+**Important research distinction:** the original Self-RAG paper trains a model to emit special **reflection tokens** that guide retrieval and critique during generation. A practical LangGraph tutorial often builds a similar behavior using **separate evaluator nodes and conditional edges**. That is a useful implementation pattern, but it is not identical to the paper's model-training method.
 
-## 5. Minimal routing sketch (illustrative)
+## 4. Four questions in a self-reflective workflow
+
+A simple way to understand this approach is to examine four decisions:
+
+1. **Do I need to retrieve information?** A basic mathematical or drafting request might not need a database search, while a question about a document probably does.
+2. **Are the retrieved documents relevant?** A passage containing similar words may still fail to answer the actual question.
+3. **Is the generated answer grounded in those documents?** A response can sound fluent while adding facts that the sources never supported.
+4. **Is the answer useful for the user's question?** An answer might be factually supported yet address the wrong part of the request.
+
+<p align="center"><img src="images/03_four_questions.png" alt="Four checks guide an adaptive answer" width="515"></p>
+
+These decisions can be separate nodes in a graph. The system should record what each evaluator decided and choose a path accordingly: answer directly, retrieve, filter, regenerate, rewrite the query, or stop with a limitation.
+
+## 5. Deciding whether retrieval is needed
+
+A model or classifier can estimate whether a request requires external evidence. For example, a definition of a common programming term may be answerable from general model knowledge. A question asking for **the latest version of a software library** needs a current source because versions change.
+
+<p align="center"><img src="images/04_skip_retrieval.png" alt="Retrieval is optional, not automatic" width="515"></p>
+
+Skipping retrieval where it adds no value can reduce latency and avoid distracting passages. But the classifier should be conservative when the answer depends on current, private, or document-specific facts. If the system cannot determine whether external evidence is required, it can retrieve rather than confidently guess.
+
+## 6. Checking document relevance
+
+After retrieval, a grading step can decide which chunks are suitable for the question. A useful passage should contain evidence directly related to the question, not just a shared keyword. If all retrieved documents fail the check, the system may rewrite the query, use another source, or ask for clarification.
+
+<p align="center"><img src="images/05_doc_grade.png" alt="Filter unhelpful passages" width="515"></p>
+
+Suppose the user asks, “What does our leave policy say about carryover?” The search returns a document titled “Annual leave policy,” but its extracted chunk covers only holiday calendars. The title is promising, yet the chunk does not contain the carryover rule. The correct action is to find a better part of the policy rather than make up an answer.
+
+## 7. Detecting unsupported claims
+
+A **grounding check** asks whether the draft answer is supported by the retrieved evidence. It differs from a relevance check. Relevance asks if the documents are useful; grounding asks if the **answer's claims** follow from those documents.
+
+<p align="center"><img src="images/06_grounding.png" alt="Check whether evidence supports an answer" width="515"></p>
+
+Example: the source says “Employees may carry over up to five days.” A draft saying “Employees can carry over ten days” is unsupported, even though the source is completely relevant. The system can regenerate the answer using the source more strictly or decline to answer if evidence remains uncertain.
+
+Grounding evaluators can make mistakes, too. For important applications, verify using structured evidence, quotations or citations, deterministic checks when possible, and human review for high-risk claims.
+
+## 8. Evaluating answer usefulness
+
+An answer can be well grounded but still fail to help. If the user asks “How do I apply for leave?” and the response correctly describes **how leave days are calculated**, it may be factual but not responsive. A separate usefulness check can trigger query rewriting or a more focused retrieval step.
+
+<p align="center"><img src="images/07_usefulness.png" alt="A grounded answer still may not address the question" width="515"></p>
+
+This distinction is important in practice: **truthfulness** and **answer relevance** are separate goals. A useful evaluator asks, “Does this output directly answer what the user asked?” rather than simply giving the answer a vague quality score.
+
+## 9. Putting the checks together in a bounded graph
+
+<p align="center"><img src="images/08_loop.png" alt="A bounded feedback loop" width="515"></p>
+
+A typical educational LangGraph pattern uses nodes for routing, retrieving, grading documents, generating an answer, checking support, and checking usefulness. Conditional edges send the workflow back to retrieval or generation when a check fails. Because any evaluator can keep rejecting outputs, the graph needs **explicit stopping conditions** such as maximum retries, latency budget, and a safe “not enough evidence” result.
+
+Here is a **control-flow example**, not a complete Self-RAG implementation:
 
 ```python
-def route_after_generation(grounded: bool, useful: bool, attempts: int):
-    if grounded and useful:
+def after_answer_review(state: dict) -> str:
+    if state["grounded"] and state["useful"]:
         return "finish"
-    if attempts >= 2:
-        return "abstain_or_escalate"
-    if not grounded:
-        return "regenerate_from_evidence"
-    return "rewrite_query_and_retrieve"
+    if state["attempts"] >= 3:
+        return "stop_without_claim"
+    if not state["grounded"]:
+        return "retrieve_again"
+    return "rewrite_question"
+
+# Map returned labels with StateGraph.add_conditional_edges(...).
+# A real system must implement retrieval, generation, and scoring nodes.
 ```
 
-A complete LangGraph implementation would model each action as a node and use conditional edges or `Command` for routing. The sketch deliberately avoids provider-specific model code to emphasize **the decision logic**.
+The example chooses concrete actions. A failed grounding check sends the application toward better evidence; a grounded but unhelpful answer suggests improving the query or response focus. The fallback stops the loop rather than pretending that repeated attempts guarantee success.
 
-## 6. Worked example: an internal policy question
+## 10. Original Self-RAG research and a LangGraph adaptation
 
-**Question:** “Does the current employee policy allow reimbursement for international coworking spaces?”
+<p align="center"><img src="images/09_paper_vs_graph.png" alt="Research token mechanism vs workflow adaptation" width="515"></p>
 
-- Router: retrieval is needed; policies are private and can change.
-- Retriever: returns travel and reimbursement chunks.
-- Relevance grader: removes a chunk about domestic parking claims.
-- Generator: drafts “International coworking costs are reimbursable with manager approval.”
-- Grounding check: discovers the provided documents say only “domestic coworking.” The international claim is unsupported.
-- Recovery: the system searches a different policy version or asks for a human policy owner instead of quietly affirming the claim.
+The original research mechanism learns to emit **retrieval and critique tokens** as part of language-model generation. Those tokens signal whether to retrieve and help evaluate passage relevance, support, and output quality. This makes retrieval and reflection part of the model's learned generation process.
 
-This illustrates why **post-generation checking** can catch errors that relevance filtering alone cannot prevent.
+A common LangGraph adaptation instead uses a standard model for answer generation and separate nodes or model calls for relevance grading, hallucination checks, and routing. It is easier to understand as an application workflow, but you should not claim it reproduces the original paper's model weights or learned token behavior.
 
-## 7. Self-RAG vs CRAG vs traditional RAG
+## 11. How Self-RAG differs from CRAG
 
-| Architecture | Core question | Common correction |
-|---|---|---|
-| Standard RAG | What chunks can I retrieve? | Usually none by default |
-| CRAG | Is the retrieval itself trustworthy/adequate? | Refine or supplement retrieved evidence |
-| Self-RAG-inspired graph | Do I need retrieval; are evidence and answer good? | Route, re-retrieve, regenerate, critique |
+<p align="center"><img src="images/10_compare_crag.png" alt="Two advanced RAG emphases" width="515"></p>
 
-These approaches can be combined: a system may evaluate retrieved evidence **and** verify the answer it generates. The distinction is mainly about **where the control gates are placed**.
+**CRAG** focuses on **correcting poor retrieved evidence** using evaluation, refinement, and supplementary searching. **Self-RAG** emphasizes **adaptive retrieval and self-critique** of the produced answer. Real systems can combine both: decide whether to retrieve, evaluate the retrieved chunks, correct weak evidence, generate an answer, and check that the answer is grounded and useful.
 
-## 8. Limits of self-grading
+| Design question | CRAG emphasis | Self-RAG emphasis |
+| --- | --- | --- |
+| Are retrieved chunks good enough? | Central question | Also important |
+| Should retrieval happen now? | Less central | Central question |
+| How should weak context be repaired? | Refine / search / combine | Re-retrieve or rewrite as needed |
+| Does the answer follow the evidence? | Must still be checked | Explicit critique step |
+| Can the workflow retry? | Yes, if designed | Yes, with a bound |
 
-An LLM grader is not an oracle. The same model family may share systematic errors with the generating model; a grader can be fooled by prompt injection inside retrieved documents or by overly broad criteria. Improve reliability with structured grader outputs, independent test sets, deterministic policy checks, source provenance, task-specific benchmarks and human review for critical decisions.
+**Bottom line:** adaptive retrieval and answer checking improve the *process*, but neither method guarantees correctness. Trustworthy sources, measurable evaluation, and transparent failure handling remain essential.
 
-### Design checklist
 
-- Identify which decisions need **hard evidence** rather than subjective model confidence.
-- Keep source text separate from instructions; retrieved content is untrusted input.
-- Bound attempts and create a safe failure/abstention path.
-- Capture trace records explaining each routing decision.
-- Measure final answer faithfulness, helpfulness, cost and latency—not just retrieval similarity.
+## 12. Worked example: deciding whether an answer is supported and useful
 
-## 9. Quick revision
+A user asks, “How many leave days can I carry over?” The company policy document contains the sentence “Employees may carry forward up to five unused annual-leave days into the next year.” The system retrieves the policy, generates a draft, and then runs two different checks.
 
-Self-RAG-inspired agents **decide -> retrieve -> filter -> generate -> verify -> revise**. The four important questions are: *Do we retrieve? Are documents relevant? Is output supported? Is output useful?* The paper's reflection-token method and the LangGraph multi-node implementation share the goal but are not identical systems.
+**Candidate A:** “You can carry over ten days.” This directly addresses the question, but it is **not grounded** in the policy. The grounding check should reject it.
 
-### Self-check questions
+**Candidate B:** “The company has several types of employee leave.” This may be true and supported somewhere in the document, but it is **not useful** for the specific carryover question. The usefulness check should reject or refocus it.
 
-1. Give an example of a question for which retrieval is unnecessary.
-2. Can a grounded answer be unhelpful? Explain.
-3. Which check detects claims not supported by evidence?
-4. Why should a system bound regeneration and query rewriting?
+**Candidate C:** “The policy allows up to five unused annual-leave days to be carried forward.” This answers the question and matches the source. It is a suitable result, assuming the document version is current.
 
-**Suggested answers:** (1) basic arithmetic; (2) yes, a document-backed paragraph might be off-topic; (3) grounding/support check; (4) avoid runaway loops, latency and cost.
+| Draft | Grounded? | Answers question? | Next step |
+| --- | --- | --- | --- |
+| Ten days | No | Yes | Regenerate from verified evidence |
+| Various leave types | Maybe | No | Refocus or rewrite query |
+| Five annual-leave days | Yes | Yes | Deliver with source reference |
 
-## Visual recap
+This shows why **document relevance**, **answer grounding**, and **answer usefulness** are not interchangeable scores. Each check addresses a different failure mode. A robust system also verifies that the policy version is current and avoids infinite retries if the relevant document is missing.
 
-![Key concept map for Self-RAG: Reflection and Verification](images/concept_map.png)
+### Evaluator confidence is not a guarantee
 
-## Clickable video chapters
+An LLM judge can mistakenly approve a persuasive false statement or reject an awkward but correct one. Use measurable test cases, structured output labels, source checks, and bounded retries. For high-stakes questions, consider a human review rather than letting the system repeatedly approve itself.
 
-- [00:00:00 — Advanced RAG overview](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=0s)
-- [00:01:00 — Prerequisites](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=60s)
-- [00:01:48 — Three traditional RAG weaknesses](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=108s)
-- [00:02:14 — Unnecessary retrieval](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=134s)
-- [00:05:17 — Blind trust in documents](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=317s)
-- [00:06:55 — Missing answer verification](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=415s)
-- [00:07:34 — What is Self-RAG?](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=454s)
-- [00:08:24 — Four decisions](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=504s)
-- [00:12:40 — Architecture and routing](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=760s)
-- [00:15:05 — Retrieval decision node](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=905s)
-- [00:35:30 — Document relevance filtering](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=2130s)
-- [00:41:00 — Context-grounded generation](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=2460s)
-- [00:45:56 — Hallucination/support evaluation](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=2756s)
-- [00:53:36 — Answer revision loop](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=3216s)
-- [00:58:23 — Usefulness and query rewrite](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=3503s)
-- [01:08:13 — Final summary](https://www.youtube.com/watch?v=BbO_XaEjzaA&list=PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL&index=28&t=4093s)
 
-## References and further reading
+---
 
-- [CampusX video and chapters](https://playlist.tools/playlist/PLKnIA16_RmvYsvB8qkUQuJmJNuiCUJFPL/BbO_XaEjzaA)
-- [Original Self-RAG paper](https://arxiv.org/abs/2310.11511)
+## Key takeaways for quick revision
 
-*Prepared October 2026. Figures are original study diagrams, not screenshots or official CampusX illustrations. Some APIs may change; consult the linked official references before production use.*
+1. Explain why retrieval should sometimes be skipped.
+2. Draw the four decision points.
+3. Distinguish document relevance from answer grounding.
+4. Distinguish grounding from usefulness.
+5. Trace a retry path and an eventual stop condition.
+6. Explain the paper-level reflection token distinction.
+
+## Revision checklist
+
+- [ ] Explain why retrieval should sometimes be skipped.
+- [ ] Draw the four decision points.
+- [ ] Distinguish document relevance from answer grounding.
+- [ ] Distinguish grounding from usefulness.
+- [ ] Trace a retry path and an eventual stop condition.
+- [ ] Explain the paper-level reflection token distinction.
+
+## Practice questions and mini exercises
+
+1. Design a path for a question that needs no retrieval and a path for a question about a current company policy.
+2. Write an example of a grounded but unhelpful answer and identify the repair step.
+3. Build a simple decision table for acceptance, retrieval retry, query rewrite, and graceful failure.
+
+## Interview questions and concise answers
+
+**Q1. What is Self-RAG?**  
+A retrieval-augmented generation approach that can decide when to retrieve and critique evidence and outputs.
+
+**Q2. What are four useful questions in a Self-RAG workflow?**  
+Retrieve? Are documents relevant? Is the answer supported? Is the answer useful?
+
+**Q3. What is grounding?**  
+Whether the answer’s factual claims are supported by the supplied evidence.
+
+**Q4. Why can a relevant answer still fail?**  
+It may be unsupported, inaccurate, or fail to address the user’s intent.
+
+**Q5. How does the original Self-RAG research differ from a LangGraph tutorial?**  
+The research trains a model with reflection tokens; an application tutorial commonly uses separate evaluator nodes and conditional routing.
+
+**Q6. How is Self-RAG different from CRAG?**  
+Self-RAG emphasizes adaptive retrieval and answer critique; CRAG emphasizes correcting weak retrieved context.
+
+
+## Further learning
+
+- [arxiv.org — 2310.11511](https://arxiv.org/abs/2310.11511)
+- [docs.langchain.com — Workflows Agents](https://docs.langchain.com/oss/python/langgraph/workflows-agents)
+
+**One-sentence summary:** Self-RAG adds adaptive retrieval and self-reflection so the system can judge whether evidence is needed, whether it is relevant, and whether the generated answer is supported and useful.

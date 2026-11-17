@@ -61,10 +61,13 @@ def discover_courses(root):
             raise ConfigurationError(f"Course '{directory.name}' needs a unique 'slug' in its README front matter.")
         slugs.add(slug)
         grouped = {}
+        resources = set(metadata.get("resources", []))
         for source in sources:
             if source.suffix.lower() not in NOTE_FORMATS or (source.parent == directory and source.name.lower() in OVERVIEWS):
                 continue
             relative = source.relative_to(directory)
+            if relative.as_posix() in resources:
+                continue
             grouped.setdefault(relative.with_suffix("").as_posix(), {})[source.suffix.lower()] = relative.as_posix()
         lessons = []
         for _, formats in sorted(grouped.items(), key=lambda item: natural_key(item[0])):

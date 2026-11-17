@@ -1,0 +1,94 @@
+/* Let the content, navigation and header use the available screen width. */
+.md-grid {
+  max-width: 100%;
+}
+
+.md-header__inner,
+.md-footer__inner,
+.md-footer-meta__inner {
+  padding-inline: clamp(.4rem, 1.5vw, 1.5rem);
+}
+
+.md-main__inner {
+  padding-inline: clamp(.25rem, 1.5vw, 1.5rem);
+}
+
+.sidebar-edge-toggle {
+  position: fixed;
+  inset-inline-start: var(--sidebar-edge, 0px);
+  top: 5rem;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--course-border);
+  border-radius: .35rem;
+  background: var(--course-surface);
+  color: var(--course-muted);
+  box-shadow: 0 2px 8px #00000010;
+  cursor: pointer;
+}
+
+.sidebar-edge-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar-edge-toggle[aria-expanded="false"] {
+  border-inline-start: 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.sidebar-edge-toggle[aria-expanded="false"] svg {
+  transform: rotate(180deg);
+}
+
+.sidebar-edge-toggle[hidden] {
+  display: none;
+}
+
+.sidebar-edge-toggle:hover {
+  border-color: var(--course-graph);
+  background: var(--course-soft);
+  color: var(--course-graph);
+}
+
+.sidebar-edge-toggle:focus-visible {
+  outline: 2px solid var(--course-graph);
+  outline-offset: 3px;
+}
+
+.md-typeset .md-typeset__table {
+  display: block;
+}
+
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary {
+    border-right: 1px solid var(--course-border);
+  }
+
+  .sidebar-hidden .md-sidebar--primary {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 76.234375em) {
+  .sidebar-edge-toggle {
+    inset-inline-start: calc(12.1rem - 14px);
+    top: 4rem;
+  }
+}
+
+@media print {
+  .sidebar-edge-toggle {
+    display: none;
+  }
+}

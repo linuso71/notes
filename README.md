@@ -8,6 +8,10 @@ Every folder directly inside `courses/` becomes a course automatically. The home
 
 The website includes search across courses, collapsible course navigation, code highlighting, light and dark themes, and Markdown, PDF, and Word downloads. Each lesson has download buttons, and the LangGraph overview offers a ZIP of that course's notes and diagrams.
 
+The layout uses the available screen width. A small arrow on the sidebar's edge collapses it; the arrow remains at the left edge to reopen it. The desktop preference is remembered across pages. On smaller screens, use the header menu to open navigation and the sidebar arrow to close it.
+
+Click a lesson diagram to open the image viewer. Use **+ / −**, the mouse wheel, or the keyboard's **+ / −** keys to zoom, then drag or swipe to pan. **Fit** (or **0**) resets the view; **Escape**, the close button, or clicking the backdrop closes it. The viewer uses local static JavaScript and CSS and works on GitHub Pages under the `/notes/` path.
+
 ## Publish on GitHub Pages
 
 1. Commit and push the site configuration and notes to `main`:
@@ -44,6 +48,10 @@ Open http://127.0.0.1:8000/notes/. Adding, removing, or renaming a course folder
 Edit notes inside `courses/<course name>/` and keep image links relative to each lesson. Markdown, PDF, and Word files with the same basename are grouped as one lesson. Lessons are ordered by their folder/file names, with numbers sorted naturally (`Video_2` before `Video_10`). A root `README.md` or `index.md` is the course overview and does not count as a lesson.
 
 `hooks/courses.py` discovers courses, builds navigation and cards, and updates the lesson list in each overview. Existing README content is preserved; course information appears below the automatic lesson list when there is no existing `## Lessons` section. You can place `<!-- course-lessons -->` in a README to choose where its generated list appears.
+
+List supplementary files under `resources` in a course README's YAML front matter (using paths relative to that course folder) to publish them without counting them as lessons. For example, LangGraph lists its earlier combined PDF and chapter index as resources and links them from its overview.
+
+`hooks/images.py` resolves relative HTML image paths for the website, including centered `<img>` diagrams. Keep source paths relative to the Markdown file; the build adjusts them for the rendered page URL without changing offline downloads.
 
 `hooks/downloads.py` adds lesson download buttons. **Markdown (ZIP)** downloads a folder containing the note and its local images, preserving their relative paths so diagrams work offline after extraction. This works for inline, reference-style, and HTML images. PDF and Word downloads remain individual files.
 
